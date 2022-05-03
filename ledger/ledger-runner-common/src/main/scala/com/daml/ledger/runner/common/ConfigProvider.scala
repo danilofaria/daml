@@ -106,7 +106,7 @@ trait ConfigProvider[ExtraConfig] {
     )
   }
 
-  def partyConfig(@unused extra: ExtraConfig): PartyConfiguration = PartyConfiguration.default
+  def partyConfig(@unused extra: ExtraConfig): PartyConfiguration = PartyConfiguration.Default
 
   def initialLedgerConfig(
       maxDeduplicationDuration: Option[Duration]
