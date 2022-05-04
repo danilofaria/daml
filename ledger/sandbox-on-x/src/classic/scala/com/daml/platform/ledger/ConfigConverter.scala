@@ -48,7 +48,6 @@ object ConfigConverter {
 
     val extraBridgeConfig = BridgeConfig(
       conflictCheckingEnabled = true,
-      implicitPartyAllocation = sandboxConfig.implicitPartyAllocation,
       submissionBufferSize = sandboxConfig.maxParallelSubmissions,
     )
 
@@ -76,6 +75,7 @@ object ConfigConverter {
       eventsPageSize = sandboxConfig.eventsPageSize,
       eventsProcessingParallelism = sandboxConfig.eventsProcessingParallelism,
       extra = extraBridgeConfig,
+      implicitPartyAllocation = sandboxConfig.implicitPartyAllocation,
       ledgerId = sandboxConfig.ledgerIdMode match {
         case LedgerIdMode.Static(ledgerId) => ledgerId.unwrap
         case LedgerIdMode.Dynamic =>
