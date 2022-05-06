@@ -5,11 +5,7 @@ package com.daml.platform.apiserver
 
 import com.daml.ledger.api.tls.TlsConfiguration
 import com.daml.platform.apiserver.SeedService.Seeding
-import com.daml.platform.configuration.{
-  CommandConfiguration,
-  InitialLedgerConfiguration,
-  PartyConfiguration,
-}
+import com.daml.platform.configuration.{CommandConfiguration, InitialLedgerConfiguration, PartyConfiguration}
 import com.daml.platform.services.time.TimeProviderType
 import com.daml.platform.store.DbSupport.{ConnectionPoolConfig, DbConfig}
 import com.daml.platform.usermanagement.UserManagementConfig
@@ -36,6 +32,7 @@ case class ApiServerConfig(
     command: CommandConfiguration = ApiServerConfig.DefaultCommand,
     timeProviderType: TimeProviderType = ApiServerConfig.DefaultTimeProviderType,
     database: DbConfig = ApiServerConfig.DefaultDatabase,
+    apiStreamShutdownTimeout: Duration = ApiServerConfig.DefaultApiStreamShutdownTimeout,
 )
 
 object ApiServerConfig {
@@ -53,6 +50,7 @@ object ApiServerConfig {
   val DefaultParty: PartyConfiguration = PartyConfiguration.Default
   val DefaultCommand: CommandConfiguration = CommandConfiguration.Default
   val DefaultTimeProviderType: TimeProviderType = TimeProviderType.WallClock
+  val DefaultApiStreamShutdownTimeout = FiniteDuration(5, "seconds")
   val DefaultDatabase: DbConfig = DbConfig(
     jdbcUrl = "default-jdbc-url",
     connectionPool = ConnectionPoolConfig(
