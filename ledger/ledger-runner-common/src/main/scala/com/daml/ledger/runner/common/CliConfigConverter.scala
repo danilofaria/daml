@@ -34,7 +34,6 @@ object CliConfigConverter {
       maxContractStateCacheSize = config.maxContractStateCacheSize,
       maxContractKeyStateCacheSize = config.maxContractKeyStateCacheSize,
       maxTransactionsInMemoryFanOutBufferSize = config.maxTransactionsInMemoryFanOutBufferSize,
-      archiveFiles = IndexServiceConfig.DefaultArchiveFiles,
     ),
     lfValueTranslationCache = LfValueTranslationCache.Config(
       contractsMaximumSize = cliConfig.lfValueTranslationContractCache,
