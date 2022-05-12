@@ -65,8 +65,7 @@ object CliConfigConverter {
       database = DbConfig(
         jdbcUrl = config.serverJdbcUrl,
         connectionPool = ConnectionPoolConfig(
-          config.apiServerDatabaseConnectionPoolSize,
-          config.apiServerDatabaseConnectionPoolSize,
+          connectionPoolSize = config.apiServerDatabaseConnectionPoolSize,
           connectionTimeout = FiniteDuration(
             config.apiServerDatabaseConnectionTimeout.toMillis,
             TimeUnit.MILLISECONDS,
