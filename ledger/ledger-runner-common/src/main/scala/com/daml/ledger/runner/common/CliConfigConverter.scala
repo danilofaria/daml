@@ -20,7 +20,6 @@ object CliConfigConverter {
       config: CliParticipantConfig,
   ): ParticipantConfig = ParticipantConfig(
     runMode = config.mode,
-    participantId = config.participantId,
     shardName = config.shardName,
     indexer = config.indexerConfig,
     indexService = IndexServiceConfig(
@@ -84,10 +83,11 @@ object CliConfigConverter {
         reportingInterval = config.metricsReportingInterval.toScala,
       ),
       participants = config.participants.map { participantConfig =>
-        ParticipantName.fromParticipantId(
-          participantConfig.participantId,
-          participantConfig.shardName,
-        ) -> toParticipantConfig(configAdaptor, config, participantConfig)
+        participantConfig.participantId -> toParticipantConfig(
+          configAdaptor,
+          config,
+          participantConfig,
+        )
       }.toMap,
     )
   }
