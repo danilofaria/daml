@@ -11,7 +11,6 @@ import com.daml.platform.configuration.{
   PartyConfiguration,
 }
 import com.daml.platform.services.time.TimeProviderType
-import com.daml.platform.store.DbSupport.{ConnectionPoolConfig, DbConfig}
 import com.daml.platform.usermanagement.UserManagementConfig
 import com.daml.ports.Port
 
@@ -25,7 +24,6 @@ case class ApiServerConfig(
     authentication: AuthServiceConfig = ApiServerConfig.DefaultAuthentication,
     command: CommandConfiguration = ApiServerConfig.DefaultCommand,
     configurationLoadTimeout: Duration = ApiServerConfig.DefaultConfigurationLoadTimeout,
-    database: DbConfig = ApiServerConfig.DefaultDatabase,
     initialLedgerConfiguration: Option[InitialLedgerConfiguration] =
       ApiServerConfig.DefaultInitialLedgerConfiguration,
     managementServiceTimeout: FiniteDuration = ApiServerConfig.DefaultManagementServiceTimeout,
@@ -55,11 +53,4 @@ object ApiServerConfig {
   val DefaultCommand: CommandConfiguration = CommandConfiguration.Default
   val DefaultTimeProviderType: TimeProviderType = TimeProviderType.WallClock
   val DefaultApiStreamShutdownTimeout = FiniteDuration(5, "seconds")
-  val DefaultDatabase: DbConfig = DbConfig(
-    jdbcUrl = "default-jdbc-url",
-    connectionPool = ConnectionPoolConfig(
-      connectionPoolSize = 16,
-      connectionTimeout = 250.millis,
-    ),
-  )
 }
