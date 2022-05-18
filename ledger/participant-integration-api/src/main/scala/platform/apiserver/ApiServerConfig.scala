@@ -52,5 +52,5 @@ object ApiServerConfig {
   val DefaultParty: PartyConfiguration = PartyConfiguration.Default
   val DefaultCommand: CommandConfiguration = CommandConfiguration.Default
   val DefaultTimeProviderType: TimeProviderType = TimeProviderType.WallClock
-  val DefaultApiStreamShutdownTimeout = FiniteDuration(5, "seconds")
+  val DefaultApiStreamShutdownTimeout: FiniteDuration = FiniteDuration(5, "seconds")
 }
