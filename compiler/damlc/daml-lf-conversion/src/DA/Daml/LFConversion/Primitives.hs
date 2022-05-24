@@ -344,10 +344,10 @@ convertPrim _ "EToAnyTemplate"
     EToAny (TCon template) (EVar $ mkVar "template")
 
 convertPrim _ "EToAnyChoice"
-    (tProxy :-> choice :-> TAny) =
-    ETmLam (mkVar "_", tProxy) $
+    (TApp proxy (TCon typeId) :-> choice :-> TAny) =
+    ETmLam (mkVar "_", TApp proxy (TCon typeId)) $
     ETmLam (mkVar "choice", choice) $
-    EToAny choice (EVar $ mkVar "choice")
+    EToAny (mkTAnyChoiceTuple choice) (mkEAnyChoiceTuple typeId $ EVar $ mkVar "choice")
 
 convertPrim _ "EToAnyContractKey"
     (TApp proxy (TCon template) :-> key :-> TAny) =
@@ -423,6 +423,16 @@ convertPrim (V1 PointDev) (L.stripPrefix "$" -> Just builtin) typ =
 
 -- Unknown primitive.
 convertPrim _ x ty = error $ "Unknown primitive " ++ show x ++ " at type " ++ renderPretty ty
+
+typeRepField, choiceField :: FieldName
+typeRepField = FieldName "typeChoiceRep"
+choiceField = FieldName "choice"
+
+mkTAnyChoiceTuple :: Type -> Type
+mkTAnyChoiceTuple t = TStruct [(typeRepField, TTypeRep), (choiceField, t)]
+
+mkEAnyChoiceTuple :: Qualified TypeConName -> Expr -> Expr
+mkEAnyChoiceTuple typeId e = EStructCon [(typeRepField, ETypeRep (TCon typeId)), (choiceField, e)]
 
 -- | Some builtins are only supported in specific versions of Daml-LF.
 whenRuntimeSupports :: Version -> Feature -> Type -> Expr -> Expr

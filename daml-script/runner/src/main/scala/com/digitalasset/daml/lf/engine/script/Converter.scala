@@ -185,17 +185,21 @@ object Converter {
     )
   }
 
-  def toAnyChoice(
-      v: SValue,
-      lookupChoiceByArgType: Identifier => Either[String, Identifier],
-  ): Either[String, AnyChoice] = {
+  def toAnyChoice(v: SValue): Either[String, AnyChoice] = {
+    def error = Left(s"Expected AnyChoice but got $v")
     v match {
-      case SRecord(_, _, ArrayList(SAny(TTyCon(tyCon), choiceVal), _)) =>
-        for {
-          choiceTypeId <- lookupChoiceByArgType(tyCon)
-          chName <- ChoiceName.fromString(tyCon.qualifiedName.name.toString)
-        } yield AnyChoice(choiceTypeId, chName, choiceVal)
-      case _ => Left(s"Expected AnyChoice but got $v")
+      case SRecord(_, _, ArrayList(SAny(TStruct(fieldTypes), SValue.SStruct(_, fieldValues)), _))
+          if fieldTypes.size == 2 =>
+        (fieldTypes.values.next(), fieldValues) match {
+          case (TTyCon(choiceTyCon), ArrayList(choiceVal, STypeRep(TTyCon(choiceTypeId)))) =>
+            ChoiceName
+              .fromString(choiceTyCon.qualifiedName.name.toString)
+              .map(AnyChoice(choiceTypeId, _, choiceVal))
+          case _ =>
+            error
+        }
+      case _ =>
+        error
     }
   }
 
@@ -237,17 +241,13 @@ object Converter {
       case _ => Left(s"Expected Create but got $v")
     }
 
-  def toExerciseCommand(
-      v: SValue,
-      lookupChoiceByArgType: (Identifier, Identifier) => Either[String, Identifier],
-  ): Either[String, command.ApiCommand] =
+  def toExerciseCommand(v: SValue): Either[String, command.ApiCommand] =
     v match {
       // typerep, contract id, choice argument and continuation
       case SRecord(_, _, vals) if vals.size == 4 => {
         for {
-          tplId <- typeRepToIdentifier(vals.get(0))
           cid <- toContractId(vals.get(1))
-          anyChoice <- toAnyChoice(vals.get(2), lookupChoiceByArgType(tplId, _))
+          anyChoice <- toAnyChoice(vals.get(2))
         } yield command.ApiCommand.Exercise(
           typeId = anyChoice.typeId,
           contractId = cid,
@@ -265,7 +265,7 @@ object Converter {
         for {
           tplId <- typeRepToIdentifier(vals.get(0))
           anyKey <- toAnyContractKey(vals.get(1))
-          anyChoice <- toAnyChoice(vals.get(2), _ => Right(tplId))
+          anyChoice <- toAnyChoice(vals.get(2))
         } yield command.ApiCommand.ExerciseByKey(
           templateId = tplId,
           contractKey = anyKey.key.toUnnormalizedValue,
@@ -276,15 +276,12 @@ object Converter {
       case _ => Left(s"Expected ExerciseByKey but got $v")
     }
 
-  def toCreateAndExerciseCommand(
-      v: SValue,
-      lookupChoiceByArgType: (Identifier, Identifier) => Either[String, Identifier],
-  ): Either[String, command.ApiCommand.CreateAndExercise] =
+  def toCreateAndExerciseCommand(v: SValue): Either[String, command.ApiCommand.CreateAndExercise] =
     v match {
       case SRecord(_, _, vals) if vals.size == 3 => {
         for {
           anyTemplate <- toAnyTemplate(vals.get(0))
-          anyChoice <- toAnyChoice(vals.get(1), lookupChoiceByArgType(anyTemplate.ty, _))
+          anyChoice <- toAnyChoice(vals.get(1))
         } yield command.ApiCommand.CreateAndExercise(
           templateId = anyTemplate.ty,
           createArgument = anyTemplate.arg.toUnnormalizedValue,
@@ -333,7 +330,6 @@ object Converter {
   def toCommands(
       compiledPackages: CompiledPackages,
       freeAp: SValue,
-      lookupChoiceByArgType: (Identifier, Identifier) => Either[String, Identifier],
   ): Either[String, List[command.ApiCommand]] = {
     @tailrec
     def iter(
@@ -352,7 +348,7 @@ object Converter {
               }
             case Right((SVariant(_, "Exercise", _, exercise), v)) =>
               // This can’t be a for-comprehension since it trips up tailrec optimization.
-              toExerciseCommand(exercise, lookupChoiceByArgType) match {
+              toExerciseCommand(exercise) match {
                 case Left(err) => Left(err)
                 case Right(r) => iter(v, r :: commands)
               }
@@ -362,7 +358,7 @@ object Converter {
                 case Right(r) => iter(v, r :: commands)
               }
             case Right((SVariant(_, "CreateAndExercise", _, createAndExercise), v)) =>
-              toCreateAndExerciseCommand(createAndExercise, lookupChoiceByArgType) match {
+              toCreateAndExerciseCommand(createAndExercise) match {
                 case Left(err) => Left(err)
                 case Right(r) => iter(v, r :: commands)
               }
