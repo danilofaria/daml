@@ -330,7 +330,9 @@ convertPrim _ "EFromAnyChoice"
     (tProxy :-> TAny :-> TOptional choice) =
     ETmLam (mkVar "_", tProxy) $
     ETmLam (mkVar "any", TAny) $
-    EFromAny choice (EVar $ mkVar "any")
+    ECase (EFromAny (mkTAnyChoiceTuple choice) (EVar $ mkVar "any"))
+      [  CaseAlternative (CPSome $ mkVar "x") (ESome choice $ EStructProj choiceField (EVar $ mkVar "x"))
+      ,  CaseAlternative CPDefault (ENone choice) ]
 
 convertPrim _ "EFromAnyContractKey"
     (TApp proxy (TCon template) :-> TAny :-> TOptional key) =
